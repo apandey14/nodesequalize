@@ -10,15 +10,9 @@ var corsOptions = {
 
 app.use(cors(corsOptions));
 
-// parse requests of content-type - application/json
-app.use(bodyParser.json());
-
-// parse requests of content-type - application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
 global.__basedir = __dirname + "/..";
 
 app.use(express.urlencoded({ extended: true }));
-
 
 db.sequelize.sync();
 // // drop the table if it already exists
@@ -26,16 +20,12 @@ db.sequelize.sync();
     //console.log("Drop and re-sync db.");
   //});
 
-
-
-
-
 // simple route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to application." });
 });
 
-require("./routes/turorial.routes")(app);
+require("./routes/candidate.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 9080;

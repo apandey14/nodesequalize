@@ -1,7 +1,7 @@
 
 const express = require("express");
 const router = express.Router();
-const excelController = require("../controllers/tutorials/excel.controller");
+const excelController = require("../controllers/candidate/excel.controller");
 const upload = require("../middlewares/upload");
 
 let routes = (app) => {
@@ -14,11 +14,11 @@ let routes = (app) => {
 
 /*
 //module.exports = app => {
-    const candidate_summary = require("../controllers/tutorial.controller.js");
+    const candidate_summary = require("../controllers/candidate.controller.js");
   
     var router = require("express").Router();
   
-    // Create a new Tutorial
+    // Create a new Candidate
     router.post("/", candidate_summary.create);
   
     // Retrieve all Candidate
@@ -27,13 +27,13 @@ let routes = (app) => {
     // Retrieve all published Candidate
     router.get("/published", candidate_summary.findAllPublished);
   
-    // Retrieve a single Tutorial with id
+    // Retrieve a single Candidate with id
     router.get("/:id", candidate_summary.findOne);
   
-    // Update a Tutorial with id
+    // Update a Candidate with id
     router.put("/:id", candidate_summary.update);
   
-    // Delete a Tutorial with id
+    // Delete a Candidate with id
     router.delete("/:id", candidate_summary.delete);
   
     // Delete all Candidate

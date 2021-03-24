@@ -1,16 +1,14 @@
 module.exports = (sequelize, Sequelize) => {
-    const Summary = sequelize.define("candidate_summary", {
+    const CandidateDetails = sequelize.define("candidateRecords", {
+          candidate_id :{
+          type:Sequelize.BIGINT,
+          field:'candidate_id',
+          primaryKey: true,
+          autoIncrement: true,
+          unique:true
+          },
       Name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        validate: {
-            notEmpty: true,
-            min: 4,
-        },
-        unique: {
-          args: 'Name',
-          msg: 'The Name is already taken!'
-       }
+        type: Sequelize.STRING       
       },
       Designation: {
         type: Sequelize.STRING
@@ -31,27 +29,10 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING
       },
       Email_ID: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        notEmpty: true,
-        validate: {
-            isEmail: true
-        },
-        unique: {
-           args: 'email',
-           msg: 'The email is already taken!'
-        }
-
+        type: Sequelize.STRING
       },
       Contact_Number: {
-        type: Sequelize.BIGINT,
-        allowNull: false,
-        notEmpty: true,
-        unique: {
-          args: 'phone',
-          msg: 'The phone is already taken!'
-       }
-
+        type: Sequelize.BIGINT
       },
       LinkedIn_Link: {
         type: Sequelize.STRING
@@ -61,5 +42,5 @@ module.exports = (sequelize, Sequelize) => {
       }
     });
   
-    return Summary;
+    return CandidateDetails;
   };

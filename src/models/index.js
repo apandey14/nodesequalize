@@ -19,6 +19,6 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.candidate_summary = require("./candidate.model.js")(sequelize, Sequelize);
+db.candidateRecords = require("./candidate.model.js")(sequelize, Sequelize);
 
 module.exports = db;

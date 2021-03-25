@@ -1,36 +1,34 @@
 const db = require("../../models");
 const CandidateDetails = db.candidateRecords;
-const validator = require("email-validator");
-const isvalid = require('isvalid');
+
+const isEmpty = require("is-empty");
 const readXlsxFile = require("read-excel-file/node");
-const { check, validationResult } = require('express-validator/check');
+var validator = require("email-validator");
 const excel = require("exceljs");
 
-function validateDatatype(data) {
-  let curList = ["INR", "USD", "EUR"];
-  let inrUnits = ["LAKHS","CRORES"];
-  let usdUnits = ["THOUSANDS", "MILLIONS"];
+const validatedat = function validateDatatype(data) {
+  let errors = {};
 
-  let isValid = true;
-  if(data.Name == null || data.Name == undefined) {
-      isValid = false;
-  } else if(data.Email_ID == null || data.Email_ID == undefined) {
-      isValid = false;
-  } else if(data.Contact_Number == null || data.Contact_Number == undefined) {
-      isValid = false;
-  } else if(data.created_by == null || data.created_by == undefined) {
-      isValid = false;
-  } else if(isNaN(data.candidates_data.ctc.value) || isNaN(data.candidates_data.candidateExperience)) {
-      isValid = false;
-  } else if(!curList.includes(data.candidates_data.ctc.ctcCurrency)) {
-      isValid = false;
-  } else if((data.candidates_data.ctc.ctcCurrency == 'INR' && !inrUnits.includes(data.candidates_data.ctc.ctcUnit))) {
-      isValid = false;
-  } else if(((data.candidates_data.ctc.ctcCurrency == 'USD' || data.candidates_data.ctc.ctcCurrency == 'EUR') && !usdUnits.includes(data.candidates_data.ctc.ctcUnit))) {
-      isValid = false;
-  }
-  return isValid;
+  data.Email_ID = !isEmpty(data.Email_ID) ? data.Email_ID : "";
+ 
+ if(isEmpty(data.Email_ID)){
+   errors.Email_ID ="Email is required";
+ }else if(!validator.isEmailValid(data.Email_ID)){
+  errors.Email_ID ="Email is invalid";
+ }
+
+ if(isEmpty(data.Name)){
+  errors.Name ="Name is required";
 }
+if(isEmpty(data.Contact_Number)){
+  errors.Contact_Number ="Contact number is required";
+}
+
+ return {
+  errors,
+  isValid: isEmpty(errors),
+};
+};
 
 
 const upload = async (req, res) => {
@@ -53,8 +51,24 @@ const upload = async (req, res) => {
 
       for(let i=0; i<ListData.length; i++){
 
+        if(ListData[i]['CTC_currency']=='INR' && ListData[i]['CTC_Type'] == 'Thousands' || ListData[i]['CTC_Type'] == 'Millions')
+        {
+            res.json({ message: "Currency Type should be LAKHS or CRORES for INR" });
+    
+        }
+      else if(ListData[i]['CTC_currency']=='USD' && ListData[i]['CTC_Type'] == 'LAKHS' || ListData[i]['CTC_Type'] == 'CRORES')
+        {
+            res.json({ message: "Currency Type should be Thousand or Millions for USD" });
+    
+        }
+      else if(ListData[i]['CTC_currency']=='EUR' && ListData[i]['CTC_Type'] == 'LAKHS' || ListData[i]['CTC_Type'] == 'CRORES')
+        {
+            res.json({ message: "Currency Type should be Thousand or Millions for EUR" });
+    
+        }else{
+     
 
-        const {valid, reason, validators} = isEmailValid(ListData[i].Email_ID);
+        const {valid} = validator.validate(ListData[i].Email_ID);
           if(!valid) {
             invalidRow.push(ListData[i]);
           } else {
@@ -62,29 +76,43 @@ const upload = async (req, res) => {
           if(!isValid){
             invalidRow.push(ListData[i]);
           } else {
-              let dbData = candidateRecords.getRecords(ListData[i].Name, ListData[i].Email_ID, ListData[i].Contact_Number);
+              let dbData = CandidateDetails.getRecords(ListData[i].Name, ListData[i].Email_ID, ListData[i].Contact_Number);
               if(dbData && dbData.length > 0) {
                 getDuplicateRow.push(ListData[i]);
               } else {
-              let insertedResult = candidateRecords.insertData(ListData[i]);
-              SuccessRow.findAll(insertedResult);
+
+
+                let rowdata = {                  
+                  Name: ListData[i].Name,
+                  Designation: ListData[i].Designation,
+                  Company_Name:ListData[i].Company_Name,
+                  Experience: ListData[i].Experience,
+                  CTC_currency: ListData[i].CTC_currency,
+                  CTC: ListData[i].CTC,
+                  CTC_Type: ListData[i].CTC_Type,
+                  Email_ID: ListData[i].Email_ID,
+                  Contact_Number: ListData[i].Contact_Number,
+                  LinkedIn_Link: ListData[i].Contact_Number,
+                  Location: ListData[i].Location
+                };
+        
+                let insertedResult = CandidateDetails.push(rowdata);
+                SuccessRow.push(insertedResult);
+
               }
           }      
-          }
+          }        
+  
       }  
       var getResponse = {
-          "invalidRow": invalidRow,
+          //"invalidRow": invalidRow,
           "SuccessRow": SuccessRow,
-          "getDuplicateRow": getDuplicateRow
+          //"getDuplicateRow": getDuplicateRow
       }
-      //util.setSuccess(200, 'Candidate list is uploaded successfully.', responseData);
-      //return util.send(res);
-
-      res.status(200).send({
-        message: "successfully Uploaded Candidate List: " + req.file.originalname,
-        data:getResponse
+         res.status(200).send({
+        message: "successfully Uploaded Candidate List: " + req.file.originalname
       });
-
+    }
     });
   } catch (error) {
     console.log(error);
@@ -95,8 +123,7 @@ const upload = async (req, res) => {
   
 };
 
-
-
 module.exports = {
+  validatedat,
   upload
 };
